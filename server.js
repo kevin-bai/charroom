@@ -1,9 +1,10 @@
-var http = require('http')
-var fs = require('fs')
-var path = require('path')
+const http = require('http')
+const fs = require('fs')
+const path = require('path')
 // 根据文件拓展名得出mime类型
-var mime = require('mime')
-var cache = {};
+const mime = require('mime')
+const chatServer = require('./lib/chat_server')
+let cache = {};
 
 function send404(res) {
     res.writeHead(404,{'Content-Type': 'text/plain'})
@@ -17,6 +18,7 @@ function sendFile(res, filePath, fileContents) {
     })
     res.end(fileContents)
 }
+
 
 function serveStatic(res, cache, absPath) {
     if(cache[absPath]){
@@ -39,3 +41,22 @@ function serveStatic(res, cache, absPath) {
         })
     }
 }
+
+let server = http.createServer(function (req,res) {
+    let filePath = false;
+
+    if(req.url == '/'){
+        filePath = 'public/index.html'
+    }else {
+        filePath = 'public' + req.url
+    }
+
+    let absPath = './' + filePath;
+
+    serveStatic(res, cache, absPath)
+})
+
+server.listen(3900,function () {
+    console.log('listening to port 3900')
+})
+chatServer.listen(server)
